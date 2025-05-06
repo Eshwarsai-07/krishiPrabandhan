@@ -3,7 +3,7 @@
 - Clone this Repository
 
 ```bash
-git clone 
+git clone = https://github.com/Eshwarsai-07/krishiPrabandhan.git
 ```
 
 - Create `.env` file in root directory
