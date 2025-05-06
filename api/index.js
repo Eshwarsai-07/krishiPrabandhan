@@ -14,41 +14,47 @@ import bookingRoutes from "./routes/booking-route.js";
 import tractorRoutes from "./routes/tractor.route.js";
 import nurseryRoutes from "./routes/nursery.route.js";
 import notificationRoutes from "./routes/notification-route.js";
-
 import cookieParser from "cookie-parser";
 import path from "path";
-
 import cors from "cors";
 import emailController from "./emailController.js";
 
+
 dotenv.config();
-mongoose
-  .connect(process.env.MONGO_URL)
-  .then(() => {
-    console.log("Database Connected");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+
+
+const connectDB = async () => {
+  try {
+   
+    await mongoose.connect(process.env.MONGO_URL, {
+      dbName: "krishPrabhandan"
+    });
+
+    mongoose.connection.on('connected', () => {
+      console.log("✅ Database Connected");
+    });
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+  }
+};
+
+await connectDB(); 
 
 const __dirname = path.resolve();
-
 const app = express();
-app.use(express.json());
 
+app.use(express.json());
 app.use(cookieParser());
 
 const corsOptions = {
   origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
-  methods: "GET , POST , PUT , DELETE , PATCH",
+  methods: "GET, POST, PUT, DELETE, PATCH",
   credentials: true,
 };
-app.use(cors());
 
-app.listen(3000, () => {
-  console.log("Server is running on Port 3000");
-});
+app.use(cors(corsOptions));
 
+//  Routes
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/send-email", emailRoutes);
@@ -63,13 +69,13 @@ app.use("/api/tractors", tractorRoutes);
 app.use("/api/nursery", nurseryRoutes);
 app.use("/api/notifications", notificationRoutes);
 
+//  Static files
 app.use(express.static(path.join(__dirname, "/client/dist")));
-
 app.get("/email", emailController);
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });
-
+//  Error handling
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
@@ -78,4 +84,9 @@ app.use((err, req, res, next) => {
     statusCode,
     message,
   });
+});
+
+// ✅ Start server
+app.listen(3000, () => {
+  console.log("🚀 Server is running on Port 3000");
 });
